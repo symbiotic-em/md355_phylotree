@@ -60,8 +60,8 @@ muscle -in all_ricks_seqs.fa -out all_ricks_alignedseqs.fa
 # will need about 16 CPUs 
 #infer first phylogeny using the baseline command iqtree
 #-s specify file input > .fa
-#-bb 1000 > 1000 replicates for ultrafast bootstrap
-#-nt AUTO determines the best CPU but I already chose 16
+#-B 1000 > 1000 replicates for ultrafast bootstrap
+#-T AUTO determines the best CPU but I already chose 16
 #this iqtree command will return various files
 
 #non-partitioned model
