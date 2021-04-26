@@ -1,0 +1,82 @@
+PREFIX=/home1/emilyagu/anaconda3
+conda activate 
+#conda deactivate to deactivate later
+#install iqtree, nwkutilities, muscle
+
+#start with ps_midi from our dataset 
+ps_midi= subset_taxa(ps_rare, Genus == "MD3-55")
+
+#extract ASVs, and make into FASTA file
+#now extract these sequences for a filtered Ricketts-only tax table
+tax1 = as(tax_table(ps_midi), "matrix")
+# transpose if necessary
+if(taxa_are_rows(ps_midi)){tax1 <- t(tax1)}
+# Coerce to data.frame
+taxdf = as.data.frame(tax1)
+head(taxdf)
+write.table(taxdf, file="midi.tsv")
+
+############ COMMAND LINE/ LINUX - Make the finalmidi.fa  #####################
+
+cd /path/to/your/tax/table/
+
+# make a 'representative sequences' fasta file that has easy to read labels
+# for each of your ASVs sequences.
+
+## add numeric labels to each of your sequences
+## also taking off the headers here, we will put those back later
+## CUSTOMIZE name of your taxa file
+sed 's/ /\t/g' midi.tsv > 1_midi.tsv           #g=global running this everytime it sees a space
+
+#insert numbers
+tail -n +2 1_midi.tsv | awk '{print NR "\t" $0}' | sed 's/^/\>asv/' > midinumbered_tax_file.tsv
+
+## Get sequences and our numerical headers
+cut -f1,2 midinumbered_tax_file.tsv > midi_tmp_seq_file
+
+## R probably exported your sequences as a string surrounded by " "
+## need to remove those
+tr -d '"' < midi_tmp_seq_file > midi_final_rep_file
+less midi_final_rep_file
+
+## now to take o=tsv with 2 columns and make it into a fasta
+awk -F '\t' '{printf("%s\n%s\n",$1,$2);}' midi_final_rep_file > midi_seq.fa
+
+
+#searched more manually and added to the file 
+#searched for rickettsiales of all generas and manually transferred them to a new "combined" file
+
+#copy and manually paste the sequences on combined_ricketts.txt to your midi_seq.fa
+#add it to the .fa with all the NCBI Ricketts sequences. This will be the input for MUSCLE and the resulting file will be the file for IQTREE
+
+#curate as needed, manually remove duplicate sequences you might
+#add Aquarickettsia rohweri (obtained from Grace Klinges) to the sequences, see "all_ricks_seqs.fa"
+
+############# MUSCLE #######################
+conda activate
+muscle -in all_ricks_seqs.fa -out all_ricks_alignedseqs.fa
+
+########### IQTREE ########################
+#create the tree with iqtree
+#submit a batch job:
+
+#create the script and run it on the high computing cluster
+############################################################
+#!/bin/bash
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --time=01:00:00
+
+#infer first phylogeny using the baseline command iqtree
+#-s specify file input > .fa
+#-bb 1000 > 1000 replicates for ultrafast bootstrap
+#-nt AUTO determines the best CPU but I already chose 16
+#this iqtree command will return various files
+
+non-partitioned model
+iqtree -s all_ricks_alignedseqs.fa -B 1000 -T AUTO
+############################################################
+#visualize on interactive tree of life by importing .nwk file 
+#https://itol.embl.de
+
+
