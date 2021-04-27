@@ -67,11 +67,11 @@ muscle -in all_ricks_seqs.fa -out all_ricks_alignedseqs.fa
 #non-partitioned model
 iqtree -s all_ricks_alignedseqs.fa -B 1000 -T AUTO
 
-#iqtree will return many files, but for tree visualization, it will be the .nwk file
+#iqtree will return many files, but for tree visualization, it will be the .treefile 
 #######################################################################
 
 
-#visualize and prune tree on interactive tree of life by importing .nwk file 
+#visualize and prune tree on interactive tree of life by importing .treefile
 #https://itol.embl.de
 
 
